@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">TransferWork</string>
+    <string name="title_activity_mapas">Mapas</string>
+    <string name="email">Email</string>
+    <string name="titulo_tela_cadastro">Cadastrar conta de usuario</string>
+    <string name="titulo_tela_login">Acessar conta de usuario</string>
+    <string name="title_activity_passageiro">PassageiroActivity</string>
+    <string name="sair">Sair</string>
+    <string name="meu_local">Meu local</string>
+    <string name="destino">Destino</string>
+    <string name="chamar_carro">Chamar carro</string>
+</resources>

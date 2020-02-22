@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1060451793",
+    "firebase_url": "https://transferwork-c7916.firebaseio.com",
+    "project_id": "transferwork-c7916",
+    "storage_bucket": "transferwork-c7916.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060451793:android:65659d91f149d0ec775cf0",
+        "android_client_info": {
+          "package_name": "br.com.transferwork"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1060451793-dmbpjl0qu0gjlcdc26btjrcj8edr0ddd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.transferwork",
+            "certificate_hash": "ac25e20a1df6eecc1e49149d127c5e8c63004101"
+          }
+        },
+        {
+          "client_id": "1060451793-n3rd6autd47j7q6itkh84lsmgmgj3h30.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4rkGH0aIGUm8qwcY0i6TR2tUSaX6plfU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1060451793-n3rd6autd47j7q6itkh84lsmgmgj3h30.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
