@@ -23,51 +23,51 @@
     <include layout="@layout/content_passageiro" />
 
     <LinearLayout
+        android:id="@+id/linearLayout_passageiro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
         android:layout_marginTop="80dp"
+        android:layout_marginRight="16dp"
         android:background="#fff"
-        android:padding="8dp"
 
 
-        >
+        android:orientation="vertical"
+        android:padding="8dp">
 
         <EditText
             android:id="@+id/passageiro_meuLocal_id"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:ems="10"
+            android:background="@android:color/white"
             android:drawableStart="@drawable/shape_circulo_verde"
             android:drawablePadding="5dp"
-            android:background="@android:color/white"
+            android:ems="10"
             android:hint="@string/meu_local"
-            android:textSize="18sp"
-            android:textColorHint="@android:color/darker_gray"
+            android:inputType="textPersonName"
             android:textColor="@android:color/darker_gray"
-            android:inputType="textPersonName" />
+            android:textColorHint="@android:color/darker_gray"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/passageiro_localDestino_id"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:ems="10"
-            android:drawableStart="@drawable/shape_circulo_verde"
-            android:drawableTint="@color/colorPrimaryDark"
-            android:drawablePadding="5dp"
             android:background="@android:color/white"
+            android:drawableStart="@drawable/shape_circulo_verde"
+            android:drawablePadding="5dp"
+            android:drawableTint="@color/colorPrimaryDark"
+            android:ems="10"
             android:hint="@string/destino"
-            android:textSize="18sp"
-            android:textColorHint="@android:color/darker_gray"
+            android:inputType="textPersonName"
             android:textColor="@android:color/darker_gray"
-            android:inputType="textPersonName" />
+            android:textColorHint="@android:color/darker_gray"
+            android:textSize="18sp" />
 
     </LinearLayout>
 
     <Button
-        android:id="@+id/botao_chamarCarro_id_Passageirp"
+        android:id="@+id/botao_chamarCarro_id_Passageiro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"

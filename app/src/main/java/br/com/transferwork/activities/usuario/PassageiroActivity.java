@@ -19,9 +19,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -33,12 +39,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import br.com.transferwork.R;
 import br.com.transferwork.config.ConfiguracaoFirebase;
@@ -51,6 +62,9 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
 
     //Firebase
     private FirebaseAuth auth;
+    private DatabaseReference referenceFirebase;
+    private FirebaseUser firebaseUser;
+    private Requisicao requisicao;
 
     //maps
     private LocationManager locationManager;
@@ -61,15 +75,91 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
     //componentes
     private EditText digitarMeuLocalPassageiro;
     private EditText digitarLocalDestinoPassageiro;
+    private LinearLayout linearLayoutPassageiro;
+    private Button botaoChamarCarroPassageiro;
+    private boolean carroChamado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_passageiro);
 
+        //configurações iniciais Firebase
+        referenceFirebase = ConfiguracaoFirebase.getDatabaseReference();
+        firebaseUser = UsuarioFirebase.getUsuarioAtual();
+
+
+
+
         carregarComponentes();
 
+        //ADICIONAR UM LISTENER PARA STATUS DA REQUISIÇÃO
+        verificarStatusRequsisicao();
+
+
+
+
     }
+
+    private void verificarStatusRequsisicao(){
+
+        //criar nó para pegar requisição atual
+        //recuperar todos os dados do usuario logado
+        Usuario usuarioLogado = UsuarioFirebase.getDadosUsuarioLogado();
+        DatabaseReference requisicoes = referenceFirebase.child("requisicoes");
+
+
+       /* String idRequsicao = String.valueOf(requisicoes.getPath());
+        DatabaseReference requisicaoAtual = requisicoes.child("requsicao_atual").
+                                                child(usarioLogado.getId()).
+                                                child(idRequsicao);
+        Log.d("requisicaoAtual", "verificarStatusRequsisicao: "+requisicaoAtual.toString());
+*/
+
+
+
+        //metodo mais direto, recuperando e ordenando por id
+        Query requisicaoPesquisa = requisicoes.orderByChild("passageiro/id")
+                .equalTo(usuarioLogado.getId());
+
+        //criar um listener para ouvir as requisições
+        requisicaoPesquisa.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                //criar uma lista para recuperar as requisições existentes
+                List<Requisicao> requisicaoList = new ArrayList<>();
+
+                //percorrendo os dados apenas uma vez para exibir o ultimo
+                for (DataSnapshot dataSnapshot1: dataSnapshot.getChildren()){
+                    requisicao = dataSnapshot1.getValue(Requisicao.class);
+                    requisicaoList.add(requisicao);
+                }
+
+                //invertendo a lista e recuperando a primeira posição
+                Collections.reverse(requisicaoList);
+                requisicao = requisicaoList.get(0);
+                Log.d("resultado: ","valores obtidos: "+requisicao.toString());
+
+                switch (requisicao.getStatus()){
+                    case  Requisicao.STATUS_AGUARDANDO:
+                        Log.d("statusReq ",requisicao.getStatus());
+                        linearLayoutPassageiro.setVisibility(View.INVISIBLE);
+                        botaoChamarCarroPassageiro.setText(R.string.cancelar_corrida);
+                        carroChamado = true;
+                        break;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -137,66 +227,81 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void chamarCarro(final View v){
-        String enderecoDestinoDigitado = digitarLocalDestinoPassageiro.getText().toString();
-        if (enderecoDestinoDigitado.isEmpty() || enderecoDestinoDigitado == null){
-            Snackbar.make(v,"Digite um endereço de destino sr(a) "+auth.getCurrentUser().getDisplayName(),Snackbar.LENGTH_SHORT).show();
-        }else{
 
-            Address addressDestinoDigitado = recuperarEnderecoDigitado(enderecoDestinoDigitado);
+        //verificar se carro ja foi chamado
+        if (!carroChamado){
+            String enderecoDestinoDigitado = digitarLocalDestinoPassageiro.getText().toString();
+            if (enderecoDestinoDigitado.isEmpty() || enderecoDestinoDigitado == null){
+                Snackbar.make(v,"Digite um endereço de destino sr(a) "+auth.getCurrentUser().getDisplayName(),Snackbar.LENGTH_SHORT).show();
+            }else{
 
-            //verificar se endereço digitado foi encontrado
-            if (addressDestinoDigitado != null){
-                //criar model de destino
-                final DestinoDigitado destinoDigitado = new DestinoDigitado();
-                //recupera a cidade
-                destinoDigitado.setCidade(addressDestinoDigitado.getSubAdminArea());
-                destinoDigitado.setCep(addressDestinoDigitado.getPostalCode());
-                destinoDigitado.setBairro(addressDestinoDigitado.getSubLocality());
-                destinoDigitado.setRua(addressDestinoDigitado.getThoroughfare());
-                destinoDigitado.setNumero(addressDestinoDigitado.getFeatureName());
-                destinoDigitado.setLatitude(String.valueOf(addressDestinoDigitado.getLatitude()));
-                destinoDigitado.setLongitude(String.valueOf(addressDestinoDigitado.getLongitude()));
+                Address addressDestinoDigitado = recuperarEnderecoDigitado(enderecoDestinoDigitado);
 
-                StringBuilder mensagem = new StringBuilder();
-                //stringbuilder cria uma string com varias linhas
-                mensagem.append("Cidade: "+destinoDigitado.getCidade());
-                mensagem.append("\nCep: "+destinoDigitado.getCep());
-                mensagem.append("\nBairro: "+destinoDigitado.getBairro());
-                mensagem.append("\nRua: "+destinoDigitado.getRua());
-                mensagem.append("\nNúmero: "+destinoDigitado.getNumero());
-                mensagem.append("\nLatitude: "+destinoDigitado.getLatitude());
-                mensagem.append("\nLongitude: "+destinoDigitado.getLongitude());
+                //verificar se endereço digitado foi encontrado
+                if (addressDestinoDigitado != null){
+                    //criar model de destino
+                    final DestinoDigitado destinoDigitado = new DestinoDigitado();
+                    //recupera a cidade
+                    destinoDigitado.setCidade(addressDestinoDigitado.getSubAdminArea());
+                    destinoDigitado.setCep(addressDestinoDigitado.getPostalCode());
+                    destinoDigitado.setBairro(addressDestinoDigitado.getSubLocality());
+                    destinoDigitado.setRua(addressDestinoDigitado.getThoroughfare());
+                    destinoDigitado.setNumero(addressDestinoDigitado.getFeatureName());
+                    destinoDigitado.setLatitude(String.valueOf(addressDestinoDigitado.getLatitude()));
+                    destinoDigitado.setLongitude(String.valueOf(addressDestinoDigitado.getLongitude()));
+
+                    StringBuilder mensagem = new StringBuilder();
+                    //stringbuilder cria uma string com varias linhas
+                    mensagem.append("Cidade: "+destinoDigitado.getCidade());
+                    mensagem.append("\nCep: "+destinoDigitado.getCep());
+                    mensagem.append("\nBairro: "+destinoDigitado.getBairro());
+                    mensagem.append("\nRua: "+destinoDigitado.getRua());
+                    mensagem.append("\nNúmero: "+destinoDigitado.getNumero());
+                    mensagem.append("\nLatitude: "+destinoDigitado.getLatitude());
+                    mensagem.append("\nLongitude: "+destinoDigitado.getLongitude());
 
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(PassageiroActivity.this);
-                builder.setTitle("Confirme o endereço de destino.");
-                builder.setMessage(mensagem);
-                builder.setIcon(android.R.drawable.ic_dialog_map);
-                builder.setPositiveButton("Confirmar destino.", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //salvar requisição
-                        salvarRequisicao(destinoDigitado,v);
-                        digitarLocalDestinoPassageiro.setText("");
-                        digitarLocalDestinoPassageiro.clearFocus();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(PassageiroActivity.this);
+                    builder.setTitle(R.string.confirmar_endereco_title);
+                    builder.setMessage(mensagem);
+                    builder.setIcon(android.R.drawable.ic_dialog_map);
+                    builder.setPositiveButton(R.string.confirmar_destino_positive_option, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //salvar requisição
+                            salvarRequisicao(destinoDigitado,v);
+                            linearLayoutPassageiro .setVisibility(View.GONE);
+                            botaoChamarCarroPassageiro.setText(R.string.cancelar_corrida);
 
-                    }
-                }).setNegativeButton("Cancelar.", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(getApplicationContext(),"Cancelado.",Toast.LENGTH_SHORT).show();
-                        dialog.cancel();
-                        digitarLocalDestinoPassageiro.clearFocus();
-                    }
-                });
+                            //carro foi chamado com sucesso
+                            carroChamado = true;
+                            digitarLocalDestinoPassageiro.clearFocus();
 
-                AlertDialog alertDialog = builder.create();
-                alertDialog.show();
+                        }
+                    }).setNegativeButton(R.string.cancelar_option, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(getApplicationContext(),"Cancelado.",Toast.LENGTH_SHORT).show();
+                            dialog.cancel();
+                            digitarLocalDestinoPassageiro.clearFocus();
+                        }
+                    });
 
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+
+                    //carro foi chamado com sucesso
+                    carroChamado = true;
+
+
+                }
 
             }
+        }else{
 
         }
+
+
 
 
     }
@@ -255,10 +360,13 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
         auth = ConfiguracaoFirebase.getFirebaseAuth();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        Objects.requireNonNull(mapFragment).getMapAsync(this);
 
         digitarLocalDestinoPassageiro = findViewById(R.id.passageiro_localDestino_id);
         digitarMeuLocalPassageiro = findViewById(R.id.passageiro_meuLocal_id);
+        botaoChamarCarroPassageiro = findViewById(R.id.botao_chamarCarro_id_Passageiro);
+        linearLayoutPassageiro = findViewById(R.id.linearLayout_passageiro);
+
 
 
     }

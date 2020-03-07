@@ -9,4 +9,8 @@
     <string name="meu_local">Meu local</string>
     <string name="destino">Destino</string>
     <string name="chamar_carro">Chamar carro</string>
+    <string name="cancelar_corrida">Cancelar corrida.</string>
+    <string name="confirmar_endereco_title">Confirme o endereço de destino.</string>
+    <string name="confirmar_destino_positive_option">Confirmar destino.</string>
+    <string name="cancelar_option">Cancelar.</string>
 </resources>

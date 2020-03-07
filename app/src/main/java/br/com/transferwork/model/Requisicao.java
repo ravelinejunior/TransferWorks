@@ -65,6 +65,10 @@ public class Requisicao {
         this.destinoDigitado = destinoDigitado;
     }
 
+    public String toString(){
+        return "Id: "+getId()+", Status: "+getStatus()+" ,Destino:"+getDestinoDigitado();
+    }
+
     public void salvar(View view){
         DatabaseReference databaseReference = ConfiguracaoFirebase.getDatabaseReference();
         DatabaseReference requisicoesDatabase = databaseReference.child("requisicoes");
