@@ -88,16 +88,10 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
         referenceFirebase = ConfiguracaoFirebase.getDatabaseReference();
         firebaseUser = UsuarioFirebase.getUsuarioAtual();
 
-
-
-
         carregarComponentes();
 
         //ADICIONAR UM LISTENER PARA STATUS DA REQUISIÇÃO
         verificarStatusRequsisicao();
-
-
-
 
     }
 
@@ -115,8 +109,6 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
                                                 child(idRequsicao);
         Log.d("requisicaoAtual", "verificarStatusRequsisicao: "+requisicaoAtual.toString());
 */
-
-
 
         //metodo mais direto, recuperando e ordenando por id
         Query requisicaoPesquisa = requisicoes.orderByChild("passageiro/id")
@@ -138,17 +130,21 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
 
                 //invertendo a lista e recuperando a primeira posição
                 Collections.reverse(requisicaoList);
-                requisicao = requisicaoList.get(0);
-                Log.d("resultado: ","valores obtidos: "+requisicao.toString());
 
-                switch (requisicao.getStatus()){
-                    case  Requisicao.STATUS_AGUARDANDO:
-                        Log.d("statusReq ",requisicao.getStatus());
-                        linearLayoutPassageiro.setVisibility(View.INVISIBLE);
-                        botaoChamarCarroPassageiro.setText(R.string.cancelar_corrida);
-                        carroChamado = true;
-                        break;
+                if (requisicaoList.size() > 0 && requisicaoList != null){
+                    requisicao = requisicaoList.get(0);
+                    Log.d("resultado: ","valores obtidos: "+requisicao.toString());
+
+                    switch (requisicao.getStatus()){
+                        case  Requisicao.STATUS_AGUARDANDO:
+                            Log.d("statusReq ",requisicao.getStatus());
+                            linearLayoutPassageiro.setVisibility(View.INVISIBLE);
+                            botaoChamarCarroPassageiro.setText(R.string.cancelar_corrida);
+                            carroChamado = true;
+                            break;
+                    }
                 }
+
             }
 
             @Override
