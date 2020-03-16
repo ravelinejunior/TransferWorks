@@ -13,4 +13,9 @@
     <string name="confirmar_endereco_title">Confirme o endereço de destino.</string>
     <string name="confirmar_destino_positive_option">Confirmar destino.</string>
     <string name="cancelar_option">Cancelar.</string>
+    <string name="deslogar_usuario">Deslogar usuário.</string>
+    <string name="sair_app_message">Deseja realmente sair do app?</string>
+    <string name="confirmar_message">Confirmar</string>
+    <string name="cancelar_message">Cancelar</string>
+    <string name="aguardando_requsicoes">Aguardando requsições</string>
 </resources>
