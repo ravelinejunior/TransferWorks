@@ -23,11 +23,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import br.com.transferwork.R;
+import br.com.transferwork.adapter.AdapterRecyclerViewRequisicoesMotorista;
 import br.com.transferwork.config.ConfiguracaoFirebase;
 import br.com.transferwork.helper.UsuarioFirebase;
 import br.com.transferwork.model.Requisicao;
+import br.com.transferwork.model.Usuario;
 
 public class RequisicoesMotoristaActivity extends AppCompatActivity {
 
@@ -35,10 +38,12 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private DatabaseReference databaseRef;
     private List<Requisicao> requisicaoList = new ArrayList<>();
+    private Usuario usuarioMotorista;
 
     //layout
     private RecyclerView recyclerViewRequisicoesMotorista;
     private TextView textViewResultoRequisicaoMotorista;
+    private AdapterRecyclerViewRequisicoesMotorista adapterRecyclerViewRequisicoesMotorista;
 
 
     @Override
@@ -57,11 +62,21 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
         //configurações iniciais
         auth = ConfiguracaoFirebase.getFirebaseAuth();
         databaseRef = ConfiguracaoFirebase.getDatabaseReference();
+        usuarioMotorista = UsuarioFirebase.getDadosUsuarioLogado();
+
+
         getSupportActionBar().setTitle("Requisições");
 
         recyclerViewRequisicoesMotorista = findViewById(R.id.recyclerView_requisicoesMotorista);
         textViewResultoRequisicaoMotorista = findViewById(R.id.mensagem_Requisicao_motorista);
 
+        //configurar Adapter e recyclerView
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerViewRequisicoesMotorista.setLayoutManager(layoutManager);
+        recyclerViewRequisicoesMotorista.setHasFixedSize(true);
+        adapterRecyclerViewRequisicoesMotorista = new AdapterRecyclerViewRequisicoesMotorista(requisicaoList,getContext(),usuarioMotorista);
+
+        recyclerViewRequisicoesMotorista.setAdapter(adapterRecyclerViewRequisicoesMotorista);
         recuperarRequisicoes();
 
 
@@ -96,7 +111,11 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
 
                     }
 
+                    adapterRecyclerViewRequisicoesMotorista.notifyDataSetChanged();
+
                 }
+
+
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -127,6 +146,7 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 auth = ConfiguracaoFirebase.getFirebaseAuth();
                 auth.signOut();
+                finish();
             }
         });
         builder.setNegativeButton(R.string.cancelar_message, new DialogInterface.OnClickListener() {
@@ -135,6 +155,10 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
                 dialogInterface.dismiss();
             }
         });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
     }
 
 
@@ -149,7 +173,6 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_item_sair:
                 deslogarBackPressed();
-                finish();
                 break;
 
         }
