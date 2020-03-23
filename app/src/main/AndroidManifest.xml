@@ -17,18 +17,28 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".activities.corridas.CorridasActivity"
+            android:label="@string/title_activity_corridas"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".activities.usuario.RequisicoesMotoristaActivity"
+            />
+        <activity
             android:name=".activities.usuario.PassageiroActivity"
             android:label="@string/title_activity_passageiro"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".activities.usuario.RequisicoesMotoristaActivity" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".activities.main.MainActivity"
+            />
+        <activity android:name=".activities.usuario.RequisicoesMotoristaActivity"
+
+            />
         <activity
             android:name=".activities.usuario.CadastroActivity"
             android:label="@string/titulo_tela_cadastro"
-            android:parentActivityName=".activities.MainActivity" />
+            android:parentActivityName=".activities.main.MainActivity" />
         <activity
             android:name=".activities.usuario.LoginActivity"
             android:label="@string/titulo_tela_login"
-            android:parentActivityName=".activities.MainActivity" />
+            android:parentActivityName=".activities.main.MainActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -44,7 +54,7 @@
         <activity
             android:name=".activities.mapa.MapasActivity"
             android:label="@string/title_activity_mapas" />
-        <activity android:name=".activities.MainActivity">
+        <activity android:name=".activities.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

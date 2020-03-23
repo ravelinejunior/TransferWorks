@@ -51,7 +51,7 @@ public class AdapterRecyclerViewRequisicoesMotorista extends RecyclerView.Adapte
         TextView nome;
         TextView distancia;
 
-        public MyViewHolder(@NonNull View itemView) {
+        MyViewHolder(@NonNull View itemView) {
             super(itemView);
             nome = itemView.findViewById(R.id.textView_requisicaoMotorista_nomePassageiro);
             distancia = itemView.findViewById(R.id.textView_requisicaoMotorista_distanciaPassageiro);

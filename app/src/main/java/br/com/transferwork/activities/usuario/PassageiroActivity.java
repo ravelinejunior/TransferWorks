@@ -72,8 +72,6 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
     private GoogleMap gMap;
     private LatLng meuLocalPassageiro;
 
-    //componentes
-    private EditText digitarMeuLocalPassageiro;
     private EditText digitarLocalDestinoPassageiro;
     private LinearLayout linearLayoutPassageiro;
     private Button botaoChamarCarroPassageiro;
@@ -143,6 +141,8 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
                             carroChamado = true;
                             break;
                     }
+                }else{
+                    Toast.makeText(PassageiroActivity.this, "Lista de requisições vazia.", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -161,10 +161,7 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
-
         recuperarLocalizacaoUsuario();
-
-
 
     }
 
@@ -188,7 +185,7 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
                 gMap.addMarker(new MarkerOptions()
                         .position(meuLocalPassageiro)
                         .title("Meu local")
-                        .snippet("Local que " + auth.getCurrentUser().getDisplayName() + " está.")
+                        .snippet("Local que " + Objects.requireNonNull(auth.getCurrentUser()).getDisplayName() + " está.")
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
                 );
 
@@ -248,13 +245,13 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
 
                     StringBuilder mensagem = new StringBuilder();
                     //stringbuilder cria uma string com varias linhas
-                    mensagem.append("Cidade: "+destinoDigitado.getCidade());
-                    mensagem.append("\nCep: "+destinoDigitado.getCep());
-                    mensagem.append("\nBairro: "+destinoDigitado.getBairro());
-                    mensagem.append("\nRua: "+destinoDigitado.getRua());
-                    mensagem.append("\nNúmero: "+destinoDigitado.getNumero());
-                    mensagem.append("\nLatitude: "+destinoDigitado.getLatitude());
-                    mensagem.append("\nLongitude: "+destinoDigitado.getLongitude());
+                    mensagem.append("Cidade: ").append(destinoDigitado.getCidade());
+                    mensagem.append("\nCep: ").append(destinoDigitado.getCep());
+                    mensagem.append("\nBairro: ").append(destinoDigitado.getBairro());
+                    mensagem.append("\nRua: ").append(destinoDigitado.getRua());
+                    mensagem.append("\nNúmero: ").append(destinoDigitado.getNumero());
+                    mensagem.append("\nLatitude: ").append(destinoDigitado.getLatitude());
+                    mensagem.append("\nLongitude: ").append(destinoDigitado.getLongitude());
 
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(PassageiroActivity.this);
@@ -294,7 +291,7 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
 
             }
         }else{
-
+        Snackbar.make(v,"Ainda não há corrida iniciada.",Snackbar.LENGTH_SHORT).show();
         }
 
 
@@ -359,7 +356,8 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
         Objects.requireNonNull(mapFragment).getMapAsync(this);
 
         digitarLocalDestinoPassageiro = findViewById(R.id.passageiro_localDestino_id);
-        digitarMeuLocalPassageiro = findViewById(R.id.passageiro_meuLocal_id);
+        //componentes
+        EditText digitarMeuLocalPassageiro = findViewById(R.id.passageiro_meuLocal_id);
         botaoChamarCarroPassageiro = findViewById(R.id.botao_chamarCarro_id_Passageiro);
         linearLayoutPassageiro = findViewById(R.id.linearLayout_passageiro);
 

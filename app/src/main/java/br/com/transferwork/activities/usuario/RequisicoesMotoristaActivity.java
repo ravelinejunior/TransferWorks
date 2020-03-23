@@ -1,18 +1,32 @@
 package br.com.transferwork.activities.usuario;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,13 +36,16 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import br.com.transferwork.R;
+import br.com.transferwork.activities.corridas.CorridasActivity;
 import br.com.transferwork.adapter.AdapterRecyclerViewRequisicoesMotorista;
 import br.com.transferwork.config.ConfiguracaoFirebase;
 import br.com.transferwork.helper.UsuarioFirebase;
+import br.com.transferwork.listeners.RecyclerItemClickListener;
 import br.com.transferwork.model.Requisicao;
 import br.com.transferwork.model.Usuario;
 
@@ -45,16 +62,20 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
     private TextView textViewResultoRequisicaoMotorista;
     private AdapterRecyclerViewRequisicoesMotorista adapterRecyclerViewRequisicoesMotorista;
 
+    //Localização GeoMapa
+    private LocationManager locationManager;
+    private LocationListener locationListener;
+    private GoogleMap gMap;
+    private LatLng meuLocalMotorista;
 
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_requisicoes_motorista);
         carregarElementos();
-
-
-
-
+        recuperarLocalizacaoUsuario();
 
     }
 
@@ -64,8 +85,7 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
         databaseRef = ConfiguracaoFirebase.getDatabaseReference();
         usuarioMotorista = UsuarioFirebase.getDadosUsuarioLogado();
 
-
-        getSupportActionBar().setTitle("Requisições");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Requisições");
 
         recyclerViewRequisicoesMotorista = findViewById(R.id.recyclerView_requisicoesMotorista);
         textViewResultoRequisicaoMotorista = findViewById(R.id.mensagem_Requisicao_motorista);
@@ -75,10 +95,89 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
         recyclerViewRequisicoesMotorista.setLayoutManager(layoutManager);
         recyclerViewRequisicoesMotorista.setHasFixedSize(true);
         adapterRecyclerViewRequisicoesMotorista = new AdapterRecyclerViewRequisicoesMotorista(requisicaoList,getContext(),usuarioMotorista);
-
         recyclerViewRequisicoesMotorista.setAdapter(adapterRecyclerViewRequisicoesMotorista);
+
+        //configurar evento de clique
+        recyclerViewRequisicoesMotorista.addOnItemTouchListener(new RecyclerItemClickListener(
+                getContext(), recyclerViewRequisicoesMotorista,
+                new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+
+                //recuperar requisição
+                Requisicao requisicao = requisicaoList.get(position);
+                Intent i = new Intent(getContext(), CorridasActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                i.putExtra("idRequisicao",requisicao.getId());
+                i.putExtra("motorista",usuarioMotorista);
+                startActivity(i);
+            }
+
+            @Override
+            public void onLongItemClick(View view, int position) {
+
+            }
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        }
+        ));
         recuperarRequisicoes();
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void recuperarLocalizacaoUsuario() {
+
+
+        //configurar o location manager para recuperar os serviços de gps
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                //recuperar lat e long
+                String latitudeMotorista = String.valueOf(location.getLatitude());
+                String longitudeMotorista= String.valueOf(location.getLongitude());
+
+                if (!(latitudeMotorista.isEmpty() && longitudeMotorista.isEmpty())){
+                    usuarioMotorista.setLatitude(latitudeMotorista);
+                    usuarioMotorista.setLongitude(longitudeMotorista);
+                    //impedir que o listener continue recebendo informações de localização
+                    locationManager.removeUpdates(locationListener);
+                    adapterRecyclerViewRequisicoesMotorista.notifyDataSetChanged();
+
+                }else{
+                    Log.e("Motorista","Lat e long: "+latitudeMotorista + ", "+longitudeMotorista);
+                }
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+
+        //Solicitar atualizações de localização do usuario
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    0,
+                    0,
+                    locationListener);
+        }
 
     }
 
@@ -115,8 +214,6 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
 
                 }
 
-
-
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -127,9 +224,8 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         deslogarBackPressed();
-
+        //super.onBackPressed();
     }
 
     private Context getContext(){

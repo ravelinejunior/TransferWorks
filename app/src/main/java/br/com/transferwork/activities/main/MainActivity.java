@@ -1,4 +1,4 @@
-package br.com.transferwork.activities;
+package br.com.transferwork.activities.main;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;

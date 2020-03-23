@@ -6,9 +6,11 @@ import android.view.View;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
 
+import java.io.Serializable;
+
 import br.com.transferwork.config.ConfiguracaoFirebase;
 
-public class Requisicao {
+public class Requisicao implements Serializable {
 
     private String id;
     private String status;

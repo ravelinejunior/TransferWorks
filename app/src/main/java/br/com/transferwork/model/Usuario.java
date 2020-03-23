@@ -1,16 +1,19 @@
 package br.com.transferwork.model;
 
+import android.os.Parcelable;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import br.com.transferwork.config.ConfiguracaoFirebase;
 
-public class Usuario {
+public class Usuario implements Serializable {
 
     private String id;
     private String nomeUsuario;
