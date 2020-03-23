@@ -18,12 +18,10 @@ import br.com.transferwork.model.Usuario;
 public class AdapterRecyclerViewRequisicoesMotorista extends RecyclerView.Adapter<AdapterRecyclerViewRequisicoesMotorista.MyViewHolder> {
    private List<Requisicao> requisicaoList;
    private Context c;
-   private Usuario usuarioMotorista;
 
     public AdapterRecyclerViewRequisicoesMotorista(List<Requisicao> requisicaoList, Context context, Usuario usuarioMotorista) {
         this.requisicaoList = requisicaoList;
         this.c = context;
-        this.usuarioMotorista = usuarioMotorista;
     }
 
     @NonNull
