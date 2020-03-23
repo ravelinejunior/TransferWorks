@@ -1,5 +1,6 @@
 package br.com.transferwork.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +33,7 @@ public class AdapterRecyclerViewRequisicoesMotorista extends RecyclerView.Adapte
         return new MyViewHolder(itemView);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Requisicao requisicao = requisicaoList.get(position);
@@ -39,7 +41,7 @@ public class AdapterRecyclerViewRequisicoesMotorista extends RecyclerView.Adapte
 
         holder.nome.setText(usuarioPassageiro.getNomeUsuario());
         //calcular distancia do passageiro e exibir a distancia entre eles
-        holder.distancia.setText("3 km - Aproximadamente");
+        holder.distancia.setText("5km - Aproximadamente");
     }
 
     @Override
@@ -47,7 +49,7 @@ public class AdapterRecyclerViewRequisicoesMotorista extends RecyclerView.Adapte
         return requisicaoList.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView nome;
         TextView distancia;
 
