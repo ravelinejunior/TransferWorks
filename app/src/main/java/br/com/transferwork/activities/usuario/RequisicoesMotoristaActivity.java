@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import br.com.transferwork.R;
 import br.com.transferwork.activities.corridas.CorridasActivity;
+import br.com.transferwork.activities.main.MainActivity;
 import br.com.transferwork.adapter.AdapterRecyclerViewRequisicoesMotorista;
 import br.com.transferwork.config.ConfiguracaoFirebase;
 import br.com.transferwork.helper.UsuarioFirebase;
@@ -131,7 +132,6 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void recuperarLocalizacaoUsuario() {
 
-
         //configurar o location manager para recuperar os serviços de gps
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -203,6 +203,7 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
                         textViewResultoRequisicaoMotorista.setVisibility(View.VISIBLE);
                     }
 
+                    requisicaoList.clear();
                     //recuperar listagem de itens
                     for (DataSnapshot ds: dataSnapshot.getChildren()){
                         Requisicao requisicao = ds.getValue(Requisicao.class);
@@ -225,7 +226,6 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         deslogarBackPressed();
-        //super.onBackPressed();
     }
 
     private Context getContext(){
@@ -242,7 +242,9 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 auth = ConfiguracaoFirebase.getFirebaseAuth();
                 auth.signOut();
-                finish();
+                Intent intent = new Intent(getContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         });
         builder.setNegativeButton(R.string.cancelar_message, new DialogInterface.OnClickListener() {

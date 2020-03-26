@@ -3,6 +3,7 @@ package br.com.transferwork.activities.corridas;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,7 +22,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -29,16 +33,22 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.Objects;
 
 import br.com.transferwork.R;
+import br.com.transferwork.activities.usuario.LoginActivity;
 import br.com.transferwork.activities.usuario.RequisicoesMotoristaActivity;
 import br.com.transferwork.config.ConfiguracaoFirebase;
 import br.com.transferwork.helper.UsuarioFirebase;
+import br.com.transferwork.model.Requisicao;
+import br.com.transferwork.model.Usuario;
 
 public class CorridasActivity extends AppCompatActivity implements OnMapReadyCallback {
     //maps
@@ -47,10 +57,18 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
     private LatLng localMotorista;
     private GoogleMap gMap;
 
+    //widgets
+    private Button botaoAceitarCorrida;
+
     //firebase
     private FirebaseAuth auth;
     private FirebaseUser user;
     private DatabaseReference referenceFirebase;
+
+    //usuarios
+    private Usuario usuarioMotorista;
+    private String idRequisicao;
+    private Requisicao requisicao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +79,73 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
         referenceFirebase = ConfiguracaoFirebase.getDatabaseReference();
         carregarElementos();
 
+        //recuperar dados do usuario
+        if (getIntent().getExtras().isEmpty()){
+            Log.e("DadosEnviados","Não existem dados nessa intent");
+        }else if (getIntent().getExtras().containsKey("idRequisicao") && getIntent().getExtras().containsKey("motorista")){
+            Bundle bundle = getIntent().getExtras();
+            usuarioMotorista = (Usuario) bundle.getSerializable("motorista");
+            idRequisicao = bundle.getString("idRequisicao");
+            verificarStatusReq();
+
+        }
+
+    }
+
+    private void verificarStatusReq() {
+        DatabaseReference requisicoes = referenceFirebase.child("requisicoes").child(idRequisicao);
+        requisicoes.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //recuperar a requisição
+                requisicao = dataSnapshot.getValue(Requisicao.class);
+                switch (requisicao.getStatus()){
+                    case Requisicao.STATUS_AGUARDANDO:
+                        requisicaoAguardando();
+                        break;
+                    case Requisicao.STATUS_A_CAMINHO:
+                        requisicaoAcaminho();
+                        break;
+                    case Requisicao.STATUS_FINALIZADO:
+                        requisicaoFinalizada();
+                        break;
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void requisicaoAguardando(){
+botaoAceitarCorrida.setText(R.string.aceitar_corrida);
+    }
+
+    private  void requisicaoAcaminho(){
+botaoAceitarCorrida.setText(R.string.a_caminho_passageiro);
+    }
+    private  void requisicaoFinalizada(){
+
     }
 
     public void aceitarCorrida(View view) {
 
+        //configurar requisição
+        requisicao = new Requisicao();
+        requisicao.setId(idRequisicao);
+        requisicao.setMotorista(usuarioMotorista);
+        requisicao.setStatus(Requisicao.STATUS_A_CAMINHO);
+
+        //atualizar requisição
+        requisicao.atualizarRequisicao();
+
     }
+
+    //METODO RECUPERA REQUISIÇÃO APOS SER ACEITA
+
 
     public void carregarElementos(){
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -73,13 +153,14 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
         toolbar.setTitle(R.string.corrida);
         toolbar.setLogo(android.R.drawable.ic_menu_mapmode);
         toolbar.setPadding(20,0,10,0);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setLeft(10);
 
         auth = ConfiguracaoFirebase.getFirebaseAuth();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         Objects.requireNonNull(mapFragment).getMapAsync(this);
+
+        botaoAceitarCorrida = findViewById(R.id.botao_aceitarCorrida_id);
 
     }
 
@@ -148,18 +229,6 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
 
     }
 
-    @Override
-    public boolean onNavigateUp() {
-        deslogarBackPressed();
-        return super.onNavigateUp();
-    }
-
-    @Override
-    public void onBackPressed() {
-        deslogarBackPressed();
-        //super.onBackPressed();
-    }
-
     private Context getContext(){
         return CorridasActivity.this;
     }
@@ -174,7 +243,9 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
             public void onClick(DialogInterface dialogInterface, int i) {
                 auth = ConfiguracaoFirebase.getFirebaseAuth();
                 auth.signOut();
-                finish();
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         });
         builder.setNegativeButton(R.string.cancelar_message, new DialogInterface.OnClickListener() {

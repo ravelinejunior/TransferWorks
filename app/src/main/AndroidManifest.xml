@@ -20,7 +20,7 @@
             android:name=".activities.corridas.CorridasActivity"
             android:label="@string/title_activity_corridas"
             android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".activities.usuario.RequisicoesMotoristaActivity"
+            android:parentActivityName=".activities.usuario.LoginActivity"
             />
         <activity
             android:name=".activities.usuario.PassageiroActivity"
@@ -29,8 +29,9 @@
             android:parentActivityName=".activities.main.MainActivity"
             />
         <activity android:name=".activities.usuario.RequisicoesMotoristaActivity"
+            android:parentActivityName=".activities.usuario.LoginActivity" />
 
-            />
+
         <activity
             android:name=".activities.usuario.CadastroActivity"
             android:label="@string/titulo_tela_cadastro"

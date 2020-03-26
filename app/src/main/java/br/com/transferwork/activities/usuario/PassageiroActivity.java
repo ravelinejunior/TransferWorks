@@ -3,6 +3,7 @@ package br.com.transferwork.activities.usuario;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,6 +54,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import br.com.transferwork.R;
+import br.com.transferwork.activities.main.MainActivity;
 import br.com.transferwork.config.ConfiguracaoFirebase;
 import br.com.transferwork.helper.UsuarioFirebase;
 import br.com.transferwork.model.DestinoDigitado;
@@ -376,12 +379,51 @@ public class PassageiroActivity extends AppCompatActivity implements OnMapReadyC
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_sair:
-                auth.signOut();
-                finish();
+                deslogarBackPressed();
                 break;
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        deslogarBackPressed();
+
+    }
+
+
+
+    private void deslogarBackPressed(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.deslogar_usuario);
+        builder.setMessage(R.string.sair_app_message);
+        builder.setIcon(android.R.drawable.ic_menu_info_details);
+        builder.setPositiveButton(R.string.confirmar_message, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                auth = ConfiguracaoFirebase.getFirebaseAuth();
+                auth.signOut();
+                Intent intent = new Intent(getContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton(R.string.cancelar_message, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                gMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                dialogInterface.dismiss();
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+    }
+
+    private Context getContext() {
+        return PassageiroActivity.this;
     }
 
 }

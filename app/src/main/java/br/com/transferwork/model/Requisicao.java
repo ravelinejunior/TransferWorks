@@ -7,6 +7,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import br.com.transferwork.config.ConfiguracaoFirebase;
 
@@ -81,6 +83,23 @@ public class Requisicao implements Serializable {
 
         requisicoesDatabase.child(getId()).setValue(this);
         Snackbar.make(view,"Salvo com sucesso!",Snackbar.LENGTH_SHORT).show();
+
+    }
+
+    public void atualizarRequisicao(){
+        //atualizar apenas a requisição do motorista
+        DatabaseReference databaseReference = ConfiguracaoFirebase.getDatabaseReference();
+        DatabaseReference requisicoesDatabase = databaseReference.child("requisicoes");
+
+        DatabaseReference requisicao = requisicoesDatabase.child(getId());
+        Map objeto = new HashMap();
+        objeto.put("motorista",getMotorista());
+        objeto.put("status",getStatus());
+        //atualizar requisicao
+        requisicao.updateChildren(objeto);
+
+
+
 
     }
 
