@@ -250,6 +250,7 @@ public class RequisicoesMotoristaActivity extends AppCompatActivity {
         builder.setNegativeButton(R.string.cancelar_message, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                gMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 dialogInterface.dismiss();
             }
         });

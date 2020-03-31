@@ -17,6 +17,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -55,7 +57,10 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
     private LocationManager locationManager;
     private LocationListener locationListener;
     private LatLng localMotorista;
+    private LatLng localPassageiro;
     private GoogleMap gMap;
+    private Marker marcadorMotorista;
+    private Marker marcadorPassageiro;
 
     //widgets
     private Button botaoAceitarCorrida;
@@ -67,6 +72,7 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
 
     //usuarios
     private Usuario usuarioMotorista;
+    private Usuario usuarioPassageiro;
     private String idRequisicao;
     private Requisicao requisicao;
 
@@ -87,7 +93,6 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
             usuarioMotorista = (Usuario) bundle.getSerializable("motorista");
             idRequisicao = bundle.getString("idRequisicao");
             verificarStatusReq();
-
         }
 
     }
@@ -99,6 +104,14 @@ public class CorridasActivity extends AppCompatActivity implements OnMapReadyCal
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //recuperar a requisição
                 requisicao = dataSnapshot.getValue(Requisicao.class);
+
+                //recuperar o passageiro e seu local
+                usuarioPassageiro = requisicao.getPassageiro();
+                localPassageiro = new LatLng(
+                        Double.parseDouble(usuarioPassageiro.getLatitude()),
+                        Double.parseDouble(usuarioMotorista.getLongitude())
+                );
+
                 switch (requisicao.getStatus()){
                     case Requisicao.STATUS_AGUARDANDO:
                         requisicaoAguardando();
@@ -125,8 +138,73 @@ botaoAceitarCorrida.setText(R.string.aceitar_corrida);
     }
 
     private  void requisicaoAcaminho(){
-botaoAceitarCorrida.setText(R.string.a_caminho_passageiro);
+        botaoAceitarCorrida.setText(R.string.a_caminho_passageiro);
+
+        //METODO PARA EXIBIR MARCADOR DO MOTORISTA
+        adicionaMarcadorMotorista(localMotorista,usuarioMotorista.getNomeUsuario());
+        //METODO PARA EXIBIR MARCADOR DO PASSAGEIRO
+        adicionarMarkerPassageiro(localPassageiro,usuarioPassageiro.getNomeUsuario());
+        //CENTRALIZAR OS MARCADORES
+        centralizarMarcadores(marcadorMotorista,marcadorPassageiro);
+
     }
+
+    private void centralizarMarcadores(Marker markerMotorista, Marker markerUsuario) {
+//utilizar conceito de bounds(limites)
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        //DEFINIR QUAIS MARCADORES EXIBIR
+        builder.include(markerMotorista.getPosition());
+        builder.include(markerUsuario.getPosition());
+
+        //cria os limites
+        LatLngBounds bounds = builder.build();
+
+        Integer boundLargura = getResources().getDisplayMetrics().widthPixels;
+        Integer boundAltura = getResources().getDisplayMetrics().heightPixels;
+        Double boundEspacamentoInterno = boundLargura*0.20;
+
+        //parametros bounds,largura,altura,espaçamento interno
+        gMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds,boundLargura,boundAltura,boundEspacamentoInterno.intValue()));
+
+    }
+
+    private void adicionarMarkerPassageiro(LatLng localizacaoPassageiro, String tituloPassageiro) {
+
+        if (marcadorPassageiro != null){
+            marcadorPassageiro.remove();
+        }
+
+        marcadorPassageiro = gMap.addMarker(new MarkerOptions().
+                position(localizacaoPassageiro).
+                title(tituloPassageiro).
+                snippet(tituloPassageiro+" está aqui.")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
+                );
+
+
+    }
+
+    private void adicionaMarcadorMotorista(LatLng localizacaoMotorista, String titulo) {
+
+        //removendo o marcador toda vez que o usuario se locomover
+        if (marcadorMotorista != null){
+            marcadorMotorista.remove();
+        }
+
+        //criar um marcador
+        marcadorMotorista = gMap.addMarker(new MarkerOptions()
+                .position(localizacaoMotorista)
+                .title(titulo)
+                .snippet("Local que " + Objects.requireNonNull(auth.getCurrentUser()).getDisplayName() + " está.")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.carro))
+        );
+
+        //criar um zoom inicial
+
+    }
+
+
+
     private  void requisicaoFinalizada(){
 
     }
